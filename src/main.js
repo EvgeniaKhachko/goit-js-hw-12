@@ -53,51 +53,60 @@ formEl.addEventListener('submit', function(event) {
     currentQuery = query;
   }
 
-fetchImages(currentQuery, currentPage)
-    .then(data => {
-      if (data.totalHits && (data.totalHits > 0)) {
-        totalHits = data.totalHits
-        lastPage = Math.ceil(totalHits/imagesPerPage);
-        const imagesForDisplay = data.hits; 
-        const imageHTML = showGallery(imagesForDisplay);
+  const drawImg = async () => {
+    try {
+        const data = await fetchImages(currentQuery, currentPage);
+        
+        if (data.totalHits && (data.totalHits > 0)) {
+          totalHits = data.totalHits
+          lastPage = Math.ceil(totalHits/imagesPerPage);
+          const imagesForDisplay = data.hits; 
+          const imageHTML = showGallery(imagesForDisplay);
 
-        gallery.innerHTML += imageHTML;
-        let imageDomRect = document.querySelector("a.gallery__item").getBoundingClientRect();
-        let heightToScroll = imageDomRect.height * 2; 
+          gallery.innerHTML += imageHTML;
+          let imageDomRect = document.querySelector("a.gallery__item").getBoundingClientRect();
+          let heightToScroll = imageDomRect.height * 2; 
 
-        if (currentPage != 1) {
-          window.scrollBy({
-            top: heightToScroll,
-            behavior: "smooth"
-          });
-        }
+          if (currentPage != 1) {
+            window.scrollBy({
+              top: heightToScroll,
+              behavior: "smooth"
+            });
+          }
 
-        lightbox.refresh();
+          lightbox.refresh();
 
-        if (currentPage == lastPage) {
+          if (currentPage == lastPage) {
+            resetToStart();
+            iziToast.error({
+              title: 'Info',
+              message: "We're sorry, but you've reached the end of search results.",
+            });
+                
+          } else {
+            moreButton.style.display = 'block';
+            currentPage++;
+          }
+
+        } else {
           resetToStart();
           iziToast.error({
-            title: 'Info',
-            message: "We're sorry, but you've reached the end of search results.",
+            title: 'Error',
+            message: 'Sorry, there are no images matching your search query. Please try again!',
           });
-              
-        } else {
-          moreButton.style.display = 'block';
-          currentPage++;
         }
+        loaderElement.style.display = 'none';
+      } catch (error) {
+        loaderElement.style.display = 'none';
+        console.log(error.message);
+    }
+  };
+  
+  drawImg();
 
-      } else {
-        resetToStart();
-        iziToast.error({
-          title: 'Error',
-          message: 'Sorry, there are no images matching your search query. Please try again!',
-        });
-      }
-      loaderElement.style.display = 'none';
-    })
-    .catch(error => {
-      loaderElement.style.display = 'none';
-      console.log(error.message);
-    });
 
 });
+
+
+
+
