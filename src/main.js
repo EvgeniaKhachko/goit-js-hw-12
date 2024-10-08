@@ -98,7 +98,10 @@ formEl.addEventListener('submit', function(event) {
         loaderElement.style.display = 'none';
       } catch (error) {
         loaderElement.style.display = 'none';
-        console.log(error.message);
+        iziToast.error({
+          title: 'Error',
+          message: 'Error!',
+        });
     }
   };
   
